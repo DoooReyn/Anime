@@ -13,9 +13,17 @@ local action_key_map = {
     fadeout = cc.FadeOut,
     fadeto  = cc.FadeTo,
     spawn   = cc.Spawn,
+    rotateto= cc.RotateTo,
+    rotateby= cc.RotateBy,
+    hide    = cc.Hide,
+    show    = cc.Show,
+    place   = cc.Place,
+    remove  = cc.RemoveSelf,
 }
 
-local function anime(animates, args)
+local function anime(target, animates, args)
+    if not target then return end
+
     local function parse(aniargs)
         if not aniargs or type(aniargs) ~= 'table' or not aniargs.key then
             return nil
@@ -36,31 +44,29 @@ local function anime(animates, args)
     if not animates or 
     type(animates) ~= 'table' or 
     #animates == 0 then 
-        return nil
+        return 
     end
 
-    if not args or 
-    type(args) ~= 'table' then
-        return nil
-    end
-    
     local anime_array = {}
     for _,v in ipairs(animates) do
         anime_array[#anime_array+1] = parse(v)
     end
 
     if #anime_array == 0 then 
-        return nil
+        return 
     end
 
-    local act = cc.Sequence:create(anime_array)
-    if args.turns then
-        act = cc.Repeat:create(act, args.turns)
+    local act = cc.Sequence:create(anime_array)    
+    if args and type(args) == 'table' then
+        if args.turns then
+            act = cc.Repeat:create(act, args.turns)
+        end
+        if args.forever then
+            act = cc.RepeatForever:create(act)
+        end
     end
-    if args.forever then
-        act = cc.RepeatForever:create(act)
-    end
-    return act
+    
+    target:runAction(act)
 end
 
 
